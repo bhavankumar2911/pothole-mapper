@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>Dashboard</title>
+  </head>
+  <body class="flex flex-col items-center pt-20">
+    <h1 class="text-3xl font-semibold my-10">Dashboard</h1>
+    <table id="table">
+      <tr class="border-b">
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Actions</th>
+      </tr>
+    </table>
+    <script>
+      window.addEventListener("load", async () => {
+        const table = document.getElementById("table");
+
+        try {
+          const res = await fetch("/api/potholes");
+          let data = await res.json();
+
+          for (let i = 0; i < data.potholes.length; i++) {
+            const pothole = data.potholes[i];
+
+            const tr = document.createElement("tr");
+            const lat = document.createElement("td");
+            const long = document.createElement("td");
+            const action = document.createElement("td");
+
+            const button = document.createElement("button");
+            button.innerText = "Fix and Remove";
+
+            button.addEventListener("click", async () => {
+              try {
+                const res = await fetch(`/api/delete/${pothole._id}`);
+                const message = (await res.json()).message;
+
+                const temp = document.getElementById(pothole._id);
+                temp.remove();
+
+                alert(message);
+              } catch (error) {
+                console.log(error);
+                alert("Something went wrong");
+              }
+            });
+
+            lat.innerText = pothole.lat;
+            long.innerText = pothole.long;
+            action.appendChild(button);
+
+            tr.appendChild(lat);
+            tr.appendChild(long);
+            tr.appendChild(action);
+
+            // styling
+            tr.className = "border-b even:bg-gray-100";
+            tr.id = pothole._id;
+
+            const cellStyle = "p-3";
+
+            lat.className = cellStyle;
+            long.className = cellStyle;
+            action.className = cellStyle;
+
+            button.className =
+              "bg-green-600 text-white rounded p-2 hover:bg-red-600";
+
+            table.appendChild(tr);
+          }
+
+          console.log(data);
+        } catch (error) {
+          console.log(error);
+          alert("Something went wrong");
+        }
+      });
+    </script>
+  </body>
+</html>
